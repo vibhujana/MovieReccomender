@@ -1,27 +1,23 @@
-import csv
-import re
-import sys
-from math import sqrt, nan
-from urllib import request
+
+import difflib
 import gzip
+import re
 import shutil
+from math import nan
+from urllib import request
+from django.shortcuts import redirect
 
 import numpy as np
-import schedule
-import pickle
-import difflib
 import pandas as pd
-import os
+import schedule
 from IPython.core.display import display
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import linear_kernel
 from sklearn.preprocessing import MinMaxScaler
 
+# from flask import Flask, render_template, request, url_for
 
-# https://medium.com/analytics-vidhya/content-based-recommender-systems-in-python-2b330e01eb80
+# app = Flask(__name__)
+
 
 def combine_title_data():
     files = ["./titlecrew.tsv", "./titleratings.tsv"]
@@ -50,12 +46,12 @@ def get_imdb_data():
         combine_title_data()
 
 
-# get_imdb_data()
-while True:
-    schedule.run_pending()
-    break
+# # get_imdb_data()
+# while True:
+#     schedule.run_pending()
+#     break
 
-
+# @app.route('/add',methods = ["GET","POST"])
 def add_title():
     user_input = input(
         "Type 'like' to add movie you like.  Type 'done' to get reccomendations")
@@ -78,16 +74,12 @@ def add_title():
         user_input = input(
             "Type 'like' to add movie you like. Type 'done' to get reccomendations")
 
-
-add_title()
-
-
 def distance_formula(a, b):
     a = np.array(a)
     b = np.array(b)
     return cosine_similarity(a.reshape(1, -1), b.reshape(1, -1))
 
-
+# @app.route('/rec')
 def rec_title():
     movies = pd.read_csv("movieData.tsv", sep="\t")
     og_movies = movies.copy()
@@ -155,7 +147,20 @@ def rec_title():
                 m = movie[2]
                 print(m)
                 best_data = og_movies[og_movies["tconst"] == movie[0]]
-    return m, best_data.to_string()
+    best_data = best_data.to_string()
+    return best_data[best_data.index("\n"):len(best_data)]
 
+# @app.route('/',methods=['GET','POST'])
+# def startup():
+#     if request.method == 'POST':
+#         if request.form.get("add") == "Add a Movie":
+#             return redirect(url_for('add_title'))
+#         elif request.form.get("get") == "Recommend a Movie":
+#             return redirect(url_for("rec_title"))
+#     # elif request.method == "GET":
+#     #     return render_template("index.html",form = form)
+#     return render_template("main.html")
 
+# if __name__ == '__main__':
+#     app.run()
 print(rec_title())
